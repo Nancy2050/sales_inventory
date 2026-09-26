@@ -1,0 +1,86 @@
+<odoo>
+    <record id="view_dashboard_form" model="ir.ui.view">
+        <field name="name">sales.inventory.dashboard.form</field>
+        <field name="model">sales.inventory.dashboard</field>
+        <field name="arch" type="xml">
+            <form string="Dashboard" create="0" edit="0" delete="0" class="o_si_dashboard">
+                <sheet>
+                    <field name="currency_id" invisible="1"/>
+                    <div class="o_si_dashboard_header">
+                        <div>
+                            <h1>RESUMEN DEL NEGOCIO</h1>
+                            <p>Dinero, ganancias e inventario calculados con movimientos confirmados.</p>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 o_si_cards">
+                        <div class="col-12 col-md-6 col-xl-3">
+                            <div class="o_si_card o_si_card_green">
+                                <div class="o_si_card_icon"><i class="fa fa-undo"/></div>
+                                <div class="o_si_card_content">
+                                    <span>CAPITAL RECUPERADO</span>
+                                    <field name="recovered_balance" nolabel="1"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-xl-3">
+                            <div class="o_si_card o_si_card_orange">
+                                <div class="o_si_card_icon"><i class="fa fa-line-chart"/></div>
+                                <div class="o_si_card_content">
+                                    <span>GANANCIA DISPONIBLE</span>
+                                    <field name="profit_balance" nolabel="1"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-xl-3">
+                            <div class="o_si_card o_si_card_blue">
+                                <div class="o_si_card_icon"><i class="fa fa-money"/></div>
+                                <div class="o_si_card_content">
+                                    <span>TOTAL EN CAJA</span>
+                                    <field name="cash_total" nolabel="1"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-xl-3">
+                            <div class="o_si_card o_si_card_purple">
+                                <div class="o_si_card_icon"><i class="fa fa-cubes"/></div>
+                                <div class="o_si_card_content">
+                                    <span>VALOR DEL INVENTARIO</span>
+                                    <field name="inventory_value" nolabel="1"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 o_si_dashboard_details">
+                        <div class="col-12 col-lg-7">
+                            <div class="o_si_panel">
+                                <h3><i class="fa fa-bar-chart"/> ACUMULADOS DE VENTAS</h3>
+                                <div class="o_si_metric"><span>Capital recuperado por ventas</span><field name="recovered_gross" nolabel="1"/></div>
+                                <div class="o_si_metric"><span>Ganancia generada por ventas</span><field name="profit_gross" nolabel="1"/></div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-5">
+                            <div class="o_si_panel">
+                                <h3><i class="fa fa-archive"/> EXISTENCIAS</h3>
+                                <div class="o_si_inventory_units"><field name="inventory_units" nolabel="1"/><span>unidades disponibles</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_dashboard" model="ir.actions.act_window">
+        <field name="name">Dashboard</field>
+        <field name="res_model">sales.inventory.dashboard</field>
+        <field name="view_mode">form</field>
+        <field name="res_id" ref="dashboard_main"/>
+        <field name="target">current</field>
+    </record>
+    <record id="action_dashboard_client" model="ir.actions.client">
+        <field name="name">Dashboard</field>
+        <field name="tag">sales_inventory.dashboard</field>
+    </record>
+</odoo>

@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="paperformat_product_catalog" model="report.paperformat">
+        <field name="name">Catálogo de productos</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">12</field>
+        <field name="margin_bottom">12</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">8</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="action_report_product_catalog" model="ir.actions.report">
+        <field name="name">Catálogo de productos</field>
+        <field name="model">sales.inventory.product</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">sales_inventory.report_product_catalog</field>
+        <field name="report_file">sales_inventory.report_product_catalog</field>
+        <field name="print_report_name">'Catalogo_productos'</field>
+        <field name="paperformat_id" ref="paperformat_product_catalog"/>
+        <field name="binding_model_id" ref="model_sales_inventory_product"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_product_catalog">
+        <t t-call="web.html_container">
+            <div class="page">
+                    <style>
+                        .si-product-report {
+                            font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                            color: #212529;
+                        }
+                        .si-product-report h2 {
+                            margin: 0 0 12px 0;
+                            color: #2f4858;
+                            font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                            font-size: 24px;
+                            font-weight: 600;
+                            text-align: center;
+                        }
+                        .si-product-report table {
+                            width: 84%;
+                            margin-left: auto;
+                            margin-right: auto;
+                            border-collapse: collapse;
+                            table-layout: fixed;
+                            font-size: 10px;
+                            font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                        }
+                        .si-product-report th {
+                            background-color: #2f4858;
+                            color: #ffffff;
+                            padding: 7px 6px;
+                            border: 1px solid #2f4858;
+                            text-align: left;
+                            font-weight: 600;
+                        }
+                        .si-product-report td {
+                            padding: 6px;
+                            border: 1px solid #d9dee2;
+                            vertical-align: middle;
+                        }
+                        .si-product-report tbody tr:nth-child(even) {
+                            background-color: #f5f7f8;
+                        }
+                        .si-product-report .product-image {
+                            width: 48px;
+                            height: 48px;
+                            object-fit: contain;
+                        }
+                        .si-product-report .image-cell {
+                            width: 58px;
+                            text-align: center;
+                        }
+                        .si-product-report .article-cell {
+                            width: 210px;
+                            overflow-wrap: break-word;
+                        }
+                        .si-product-report .stock-cell {
+                            width: 66px;
+                        }
+                        .si-product-report .price-cell {
+                            width: 84px;
+                        }
+                        .si-product-report td.price-cell {
+                            font-size: 12px;
+                            font-weight: 700;
+                        }
+                        .si-product-report .number {
+                            text-align: right;
+                            white-space: nowrap;
+                        }
+                        .si-product-report .out-of-stock {
+                            color: #b42318;
+                            font-weight: bold;
+                        }
+                    </style>
+
+                    <div class="si-product-report">
+                        <h2><span class="si-utf8" t-att-data-b64="docs.pdf_b64_text('Catálogo de productos')"/></h2>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th class="image-cell">Imagen</th>
+                                    <th class="article-cell"><span class="si-utf8" t-att-data-b64="docs.pdf_b64_text('Artículo')"/></th>
+                                    <th class="number stock-cell">Existencia</th>
+                                    <th class="number price-cell">Precio compra</th>
+                                    <th class="number price-cell">Precio sugerido</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="docs" t-as="product">
+                                    <td class="image-cell">
+                                        <img t-if="product.image_128" t-att-src="image_data_uri(product.image_128)" class="product-image" alt="Producto"/>
+                                        <span t-else="">Sin imagen</span>
+                                    </td>
+                                    <td class="article-cell"><strong class="si-utf8" t-att-data-b64="product.pdf_b64_text(product.name)"/></td>
+                                    <td t-attf-class="number stock-cell {{ 'out-of-stock' if product.stock_qty &lt;= 0 else '' }}">
+                                        <span t-field="product.stock_qty"/>
+                                    </td>
+                                    <td class="number price-cell">
+                                        <span class="si-utf8" t-att-data-b64="product.pdf_b64_text(product.currency_id.symbol)"/>
+                                        <span t-out="'{:,.2f}'.format(product.purchase_price)"/>
+                                    </td>
+                                    <td class="number price-cell">
+                                        <span class="si-utf8" t-att-data-b64="product.pdf_b64_text(product.currency_id.symbol)"/>
+                                        <span t-out="'{:,.2f}'.format(product.suggested_price)"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <script type="text/javascript">
+                            (function () {
+                                function decodeUtf8Base64(value) {
+                                    var binary = window.atob(value);
+                                    var encoded = "";
+                                    for (var i = 0; i &lt; binary.length; i++) {
+                                        encoded += "%" + ("00" + binary.charCodeAt(i).toString(16)).slice(-2);
+                                    }
+                                    return decodeURIComponent(encoded);
+                                }
+                                var elements = document.querySelectorAll(".si-utf8");
+                                for (var index = 0; index &lt; elements.length; index++) {
+                                    elements[index].textContent = decodeUtf8Base64(elements[index].getAttribute("data-b64"));
+                                }
+                            }());
+                        </script>
+                    </div>
+            </div>
+        </t>
+    </template>
+</odoo>

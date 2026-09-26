@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="sales_inventory.ImageCropField" t-inherit="web.ImageField" t-inherit-mode="primary">
+        <xpath expr="//div[contains(@class, 'o_image_uploader_container')]" position="inside">
+            <button t-if="props.record.data[props.name] and state.isValid"
+                    type="button"
+                    class="o_rotate_image_button btn btn-light border-0 rounded-circle m-1 p-1"
+                    data-tooltip="Girar 90 grados"
+                    aria-label="Girar imagen 90 grados"
+                    t-att-disabled="state.rotating"
+                    t-on-click.stop="rotateImage">
+                <i class="fa fa-rotate-right fa-fw"/>
+            </button>
+        </xpath>
+    </t>
+
+    <t t-name="sales_inventory.ProductImageCropDialog">
+        <Dialog title.translate="Ajustar imagen del producto" size="'lg'">
+            <div class="o_si_crop_editor">
+                <p class="text-muted text-center mb-3">
+                    Arrastra la imagen para centrar el producto y utiliza el control para acercar o alejar.
+                </p>
+                <div class="o_si_crop_stage" t-ref="cropStage"
+                     t-on-pointerdown="onPointerDown"
+                     t-on-pointermove="onPointerMove"
+                     t-on-pointerup="onPointerUp"
+                     t-on-pointercancel="onPointerUp">
+                    <img t-ref="cropImage"
+                         t-att-src="imageSource"
+                         t-att-style="imageStyle"
+                         t-on-load="onImageLoad"
+                         draggable="false"
+                         alt="Imagen a recortar"/>
+                    <div class="o_si_crop_grid"/>
+                </div>
+                <div class="o_si_crop_controls">
+                    <i class="fa fa-search-minus"/>
+                    <input type="range" min="1" max="3" step="0.01"
+                           t-att-value="state.zoom" t-on-input="onZoomInput"/>
+                    <i class="fa fa-search-plus"/>
+                    <button type="button" class="btn btn-link" t-on-click="centerImage">
+                        <i class="fa fa-crosshairs me-1"/>Centrar
+                    </button>
+                </div>
+            </div>
+            <t t-set-slot="footer">
+                <button type="button" class="btn btn-primary" t-on-click="confirmCrop" t-att-disabled="!state.ready">
+                    <i class="fa fa-crop me-1"/>Usar imagen
+                </button>
+                <button type="button" class="btn btn-secondary" t-on-click="props.close">Cancelar</button>
+            </t>
+        </Dialog>
+    </t>
+</templates>

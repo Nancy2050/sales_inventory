@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="sales_inventory.Dashboard">
+        <div class="o_si_dashboard_page">
+            <div class="o_si_dashboard_loading" t-if="state.loading">
+                <i class="fa fa-spinner fa-spin"/> Cargando indicadores...
+            </div>
+            <t t-else="">
+                <div class="o_si_dashboard_header">
+                    <div>
+                        <h1>RESUMEN DEL NEGOCIO</h1>
+                        <p>Ventas confirmadas, rentabilidad e inventario actual.</p>
+                    </div>
+                    <button class="btn btn-outline-primary" t-on-click="loadData">
+                        <i class="fa fa-refresh"/> Actualizar
+                    </button>
+                </div>
+
+                <div class="o_si_dashboard_cards">
+                    <div class="o_si_kpi o_si_kpi_green">
+                        <i class="fa fa-undo"/>
+                        <div><span>CAPITAL RECUPERADO</span><strong t-esc="formatMoney(state.data.balances.recovered_balance)"/></div>
+                    </div>
+                    <div class="o_si_kpi o_si_kpi_orange">
+                        <i class="fa fa-line-chart"/>
+                        <div><span>GANANCIA DISPONIBLE</span><strong t-esc="formatMoney(state.data.balances.profit_balance)"/></div>
+                    </div>
+                    <div class="o_si_kpi o_si_kpi_blue">
+                        <i class="fa fa-money"/>
+                        <div><span>TOTAL EN CAJA</span><strong t-esc="formatMoney(state.data.balances.cash_total)"/></div>
+                    </div>
+                    <div class="o_si_kpi o_si_kpi_purple">
+                        <i class="fa fa-cubes"/>
+                        <div><span>VALOR DEL INVENTARIO</span><strong t-esc="formatMoney(state.data.balances.inventory_value)"/></div>
+                    </div>
+                </div>
+
+                <div class="o_si_dashboard_body">
+                    <main class="o_si_dashboard_charts">
+                        <section class="o_si_chart_panel o_si_chart_wide">
+                            <div class="o_si_chart_title">
+                                <div><h2>Ventas y ganancia por mes</h2><p>Comparación de los últimos 12 meses</p></div>
+                                <div class="o_si_chart_legend">
+                                    <span><i class="o_si_dot o_si_dot_blue"/> Ventas</span>
+                                    <span><i class="o_si_dot o_si_dot_green"/> Ganancia</span>
+                                </div>
+                            </div>
+                            <svg class="o_si_line_chart" viewBox="0 0 720 260" role="img" aria-label="Ventas y ganancia por mes">
+                                <t t-foreach="axisTicks" t-as="tick" t-key="tick.y">
+                                    <line x1="58" x2="700" t-att-y1="tick.y" t-att-y2="tick.y" class="o_si_grid_line"/>
+                                    <text x="50" t-att-y="tick.y + 4" text-anchor="end" class="o_si_axis_label" t-esc="formatCompact(tick.value)"/>
+                                </t>
+                                <polyline t-att-points="chartPoints('sales')" class="o_si_chart_line o_si_chart_line_sales"/>
+                                <polyline t-att-points="chartPoints('profit')" class="o_si_chart_line o_si_chart_line_profit"/>
+                                <t t-foreach="state.data.monthly" t-as="month" t-key="month.label">
+                                    <circle t-att-cx="chartX(month_index)" t-att-cy="chartY(month.sales)" r="4" class="o_si_point_sales">
+                                        <title t-esc="`${month.label}: ${formatMoney(month.sales)} en ventas`"/>
+                                    </circle>
+                                    <circle t-att-cx="chartX(month_index)" t-att-cy="chartY(month.profit)" r="4" class="o_si_point_profit">
+                                        <title t-esc="`${month.label}: ${formatMoney(month.profit)} de ganancia`"/>
+                                    </circle>
+                                    <text t-att-x="chartX(month_index)" y="245" text-anchor="middle" class="o_si_month_label" t-esc="month.label"/>
+                                </t>
+                            </svg>
+                        </section>
+
+                        <section class="o_si_chart_panel">
+                            <div class="o_si_chart_title"><div><h2>Productos más vendidos</h2><p>Unidades vendidas históricamente</p></div></div>
+                            <div class="o_si_empty_chart" t-if="!state.data.products_ranking.length">Aún no hay ventas confirmadas.</div>
+                            <div class="o_si_horizontal_chart" t-else="">
+                                <div class="o_si_bar_row" t-foreach="state.data.products_ranking" t-as="product" t-key="product.name">
+                                    <div class="o_si_bar_label"><span t-esc="product.name"/><strong t-esc="formatQuantity(product.quantity)"/></div>
+                                    <div class="o_si_bar_track"><div class="o_si_bar_fill o_si_bar_fill_blue" t-att-style="`width: ${rankingWidth(product.quantity)}`"/></div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="o_si_chart_panel">
+                            <div class="o_si_chart_title"><div><h2>Categorías por mes</h2><p>Participación en unidades vendidas, últimos 6 meses</p></div></div>
+                            <div class="o_si_category_legend" t-if="state.data.category_legend.length">
+                                <span t-foreach="state.data.category_legend" t-as="category" t-key="category.name">
+                                    <i t-att-style="`background: ${category.color}`"/> <t t-esc="category.name"/>
+                                </span>
+                            </div>
+                            <div class="o_si_empty_chart" t-if="!state.data.category_legend.length">Aún no hay ventas confirmadas.</div>
+                            <div class="o_si_stacked_chart" t-else="">
+                                <div class="o_si_stack_column" t-foreach="state.data.category_months" t-as="month" t-key="month.label">
+                                    <div class="o_si_stack_total" t-esc="formatQuantity(month.total)"/>
+                                    <div class="o_si_stack_bar">
+                                        <div t-foreach="month.segments" t-as="segment" t-key="segment.name" t-att-style="`height: ${segment.percent}%; background: ${segment.color}`">
+                                            <title t-esc="`${segment.name}: ${formatQuantity(segment.value)} unidades`"/>
+                                        </div>
+                                    </div>
+                                    <span t-esc="month.label"/>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="o_si_chart_panel o_si_chart_wide">
+                            <div class="o_si_chart_title"><div><h2>Inventario por categoría</h2><p>Unidades disponibles actualmente</p></div></div>
+                            <div class="o_si_empty_chart" t-if="!state.data.inventory_by_category.length">No hay productos con existencia.</div>
+                            <div class="o_si_inventory_chart" t-else="">
+                                <div class="o_si_inventory_bar" t-foreach="state.data.inventory_by_category" t-as="category" t-key="category.name">
+                                    <span t-esc="category.name"/>
+                                    <div class="o_si_bar_track"><div class="o_si_bar_fill o_si_bar_fill_purple" t-att-style="`width: ${inventoryWidth(category.quantity)}`"/></div>
+                                    <strong t-esc="formatQuantity(category.quantity)"/>
+                                </div>
+                            </div>
+                        </section>
+                    </main>
+
+                    <aside class="o_si_dashboard_summary">
+                        <section class="o_si_summary_panel">
+                            <h2><i class="fa fa-bar-chart"/> ACUMULADO EN VENTAS</h2>
+                            <div><span>Capital recuperado</span><strong t-esc="formatMoney(state.data.balances.recovered_gross)"/></div>
+                            <div><span>Ganancia generada</span><strong t-esc="formatMoney(state.data.balances.profit_gross)"/></div>
+                        </section>
+                        <section class="o_si_summary_panel o_si_summary_stock">
+                            <h2><i class="fa fa-archive"/> EXISTENCIAS</h2>
+                            <strong t-esc="formatQuantity(state.data.balances.inventory_units)"/>
+                            <span>unidades disponibles</span>
+                            <small t-esc="formatMoney(state.data.balances.inventory_value)"/>
+                        </section>
+                        <section class="o_si_summary_panel o_si_sales_highlights">
+                            <h2><i class="fa fa-trophy"/> PRODUCTOS DESTACADOS</h2>
+                            <t t-if="state.data.most_sold">
+                                <div class="o_si_highlight_best">
+                                    <span>Más vendido</span><strong t-esc="state.data.most_sold.name"/>
+                                    <small><t t-esc="formatQuantity(state.data.most_sold.quantity)"/> unidades</small>
+                                </div>
+                                <div class="o_si_highlight_least">
+                                    <span>Menos vendido</span><strong t-esc="state.data.least_sold.name"/>
+                                    <small><t t-esc="formatQuantity(state.data.least_sold.quantity)"/> unidades</small>
+                                </div>
+                            </t>
+                            <div class="o_si_empty_chart" t-else="">Aún no hay ventas confirmadas.</div>
+                        </section>
+                    </aside>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

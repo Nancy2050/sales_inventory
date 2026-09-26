@@ -1,0 +1,12 @@
+<odoo>
+    <record id="seq_sale" model="ir.sequence">
+        <field name="name">Venta</field><field name="code">sales.inventory.sale</field><field name="prefix">VTA/</field><field name="padding">5</field>
+    </record>
+    <record id="seq_expense" model="ir.sequence">
+        <field name="name">Solicitud de gasto</field><field name="code">sales.inventory.expense</field><field name="prefix">GTO/</field><field name="padding">5</field>
+    </record>
+    <record id="seq_recovery" model="ir.sequence">
+        <field name="name">Liberación de capital</field><field name="code">sales.inventory.recovery</field><field name="prefix">LIB/</field><field name="padding">5</field>
+    </record>
+</odoo>
+

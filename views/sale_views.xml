@@ -1,0 +1,14 @@
+<odoo>
+    <record id="view_sale_list" model="ir.ui.view"><field name="name">sales.inventory.sale.list</field><field name="model">sales.inventory.sale</field><field name="arch" type="xml">
+    <list decoration-success="state == 'confirmed'" decoration-muted="state == 'cancel'">
+        <field name="name"/><field name="date"/><field name="total" sum="Total"/><field name="recovered_total" sum="Recuperado"/><field name="profit_total" sum="Ganancia"/><field name="state" widget="badge"/>
+    </list></field></record>
+    <record id="view_sale_form" model="ir.ui.view"><field name="name">sales.inventory.sale.form</field><field name="model">sales.inventory.sale</field><field name="arch" type="xml">
+    <form string="Venta">
+        <header><button name="action_confirm" string="Confirmar venta" type="object" class="btn-primary" invisible="state != 'draft'"/><button name="action_cancel" string="Cancelar" type="object" invisible="state != 'confirmed'"/><button name="action_draft" string="Regresar a borrador" type="object" invisible="state != 'cancel'"/><field name="state" widget="statusbar" statusbar_visible="draft,confirmed"/></header>
+        <sheet><div class="oe_title"><label for="name"/><h1><field name="name"/></h1></div><group><field name="date" readonly="state != 'draft'"/><field name="currency_id" invisible="1"/></group>
+        <field name="line_ids" readonly="state != 'draft'"><list editable="bottom"><field name="product_id"/><field name="available_qty"/><field name="quantity"/><field name="suggested_price"/><field name="sale_total"/><field name="effective_unit_price" optional="show"/><field name="recovered_total"/><field name="profit_total"/></list></field>
+        <group class="oe_subtotal_footer"><field name="total"/><field name="recovered_total"/><field name="profit_total"/></group><field name="notes" placeholder="Notas de la venta..."/></sheet>
+    </form></field></record>
+    <record id="action_sales" model="ir.actions.act_window"><field name="name">Ventas</field><field name="res_model">sales.inventory.sale</field><field name="view_mode">list,form</field><field name="context">{'default_date': context_today()}</field></record>
+</odoo>

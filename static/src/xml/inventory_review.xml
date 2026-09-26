@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="sales_inventory.InventoryReview">
+        <div class="o_si_inventory_review">
+            <div class="o_si_review_header">
+                <div><h1>REVISIÓN DE INVENTARIO</h1><p>Registra si cada producto está físicamente y finaliza la vuelta para conservar el historial.</p></div>
+                <div class="o_si_review_header_actions">
+                    <button class="btn btn-outline-primary o_si_review_refresh" t-on-click="refreshProducts" t-att-disabled="state.loading || state.refreshing">
+                        <i t-att-class="state.refreshing ? 'fa fa-refresh fa-spin' : 'fa fa-refresh'"/> Actualizar
+                    </button>
+                    <button class="btn btn-primary o_si_review_finish" t-on-click="finishReview" t-att-disabled="!state.products.length || pendingCount">
+                        <i class="fa fa-check-square-o"/> Finalizar revisión
+                    </button>
+                    <div class="o_si_review_counter" t-if="state.products.length">
+                        <strong><t t-esc="reviewedCount"/> / <t t-esc="state.products.length"/></strong>
+                        <span>revisados</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="o_si_review_workspace">
+                <main class="o_si_review_main">
+                    <div class="progress o_si_review_progress" t-if="state.products.length">
+                        <div class="progress-bar bg-success" role="progressbar" t-att-style="`width: ${progressPercent}%`"><t t-esc="progressPercent"/>%</div>
+                    </div>
+                    <div class="o_si_review_status_summary" t-if="state.products.length">
+                        <span class="o_si_status_present"><i class="fa fa-check-circle"/> <t t-esc="verifiedCount"/> presentes</span>
+                        <span class="o_si_status_missing"><i class="fa fa-times-circle"/> <t t-esc="missingCount"/> ausentes</span>
+                        <span class="o_si_status_pending"><i class="fa fa-clock-o"/> <t t-esc="pendingCount"/> pendientes</span>
+                    </div>
+                    <div class="o_si_review_loading" t-if="state.loading"><i class="fa fa-spinner fa-spin"/> Cargando productos...</div>
+                    <div class="alert alert-info" t-elif="!state.products.length">No hay productos con existencia para revisar.</div>
+                    <t t-else="">
+                        <div class="o_si_flashcard" t-att-class="{
+                            'o_si_flashcard_verified': product.inventory_review_status === 'present',
+                            'o_si_flashcard_missing': product.inventory_review_status === 'missing'
+                        }">
+                            <div class="o_si_flashcard_badge" t-if="product.inventory_review_status === 'present'"><i class="fa fa-check"/> Sí estaba</div>
+                            <div class="o_si_flashcard_badge o_si_flashcard_badge_missing" t-elif="product.inventory_review_status === 'missing'"><i class="fa fa-times"/> No estaba</div>
+                            <div class="o_si_flashcard_media"><img class="o_si_flashcard_image" t-att-src="productImageUrl" t-att-alt="product.name"/></div>
+                            <div class="o_si_flashcard_lower">
+                                <div class="o_si_flashcard_details">
+                                    <div class="o_si_flashcard_identity">
+                                        <span class="o_si_flashcard_code"><t t-esc="product.code"/></span>
+                                        <h2><t t-esc="product.name"/></h2>
+                                        <p class="o_si_flashcard_category" t-if="product.category_id"><t t-esc="product.category_id[1]"/></p>
+                                    </div>
+                                    <div class="o_si_flashcard_metrics">
+                                        <div class="o_si_flashcard_stock"><span>Existencia registrada</span><strong><t t-esc="product.stock_qty"/></strong></div>
+                                        <div><span>Precio de compra</span><strong><t t-esc="formatPrice(product.purchase_price)"/></strong></div>
+                                        <div><span>Precio sugerido</span><strong><t t-esc="formatPrice(product.suggested_price)"/></strong></div>
+                                    </div>
+                                </div>
+                                <div class="o_si_review_navigation">
+                                    <span>Producto <t t-esc="state.index + 1"/> de <t t-esc="state.products.length"/></span>
+                                    <button class="btn btn-secondary" t-on-click="previous" t-att-disabled="state.index === 0"><i class="fa fa-chevron-left"/> Anterior</button>
+                                    <button class="btn" t-att-class="product.inventory_review_status === 'present' ? 'btn-success' : 'btn-outline-success'" t-on-click="() => this.setReviewStatus('present')"><i class="fa fa-check"/> Sí estaba</button>
+                                    <button class="btn" t-att-class="product.inventory_review_status === 'missing' ? 'btn-danger' : 'btn-outline-danger'" t-on-click="() => this.setReviewStatus('missing')"><i class="fa fa-times"/> No estaba</button>
+                                    <button class="btn btn-link o_si_mark_pending" t-if="product.inventory_review_status !== 'pending'" t-on-click="() => this.setReviewStatus('pending')">Regresar a pendiente</button>
+                                    <button class="btn btn-primary" t-on-click="next" t-att-disabled="state.index === state.products.length - 1">Siguiente <i class="fa fa-chevron-right"/></button>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </main>
+
+                <aside class="o_si_review_history">
+                    <div class="o_si_history_header"><i class="fa fa-history"/><div><h2>Historial de revisiones</h2><p>Últimos 20 cierres</p></div></div>
+                    <div class="o_si_history_empty" t-if="!state.histories.length">Cuando finalices la primera revisión aparecerá aquí.</div>
+                    <div class="o_si_history_feed" t-else="">
+                        <article class="o_si_history_entry" t-foreach="state.histories" t-as="review" t-key="review.id">
+                            <button type="button" class="o_si_history_summary" t-on-click="() => this.toggleHistory(review.id)">
+                                <span class="o_si_history_dot"/>
+                                <div>
+                                    <strong t-esc="formatReviewDate(review.review_date)"/>
+                                    <small t-if="review.reviewed_by">Finalizada por <t t-esc="review.reviewed_by[1]"/></small>
+                                    <div class="o_si_history_counts">
+                                        <span class="text-success"><t t-esc="review.present_count"/> sí estaban</span>
+                                        <span class="text-danger"><t t-esc="review.missing_count"/> no estaban</span>
+                                    </div>
+                                </div>
+                                <i t-att-class="state.expandedReviewId === review.id ? 'fa fa-chevron-up' : 'fa fa-chevron-down'"/>
+                            </button>
+                            <div class="o_si_history_details" t-if="state.expandedReviewId === review.id">
+                                <div t-if="review.present_count">
+                                    <h3><i class="fa fa-check-circle"/> Sí estaban</h3>
+                                    <ul><li t-foreach="historyItems(review.present_summary)" t-as="item" t-key="item" t-esc="item"/></ul>
+                                </div>
+                                <div t-if="review.missing_count">
+                                    <h3><i class="fa fa-times-circle"/> No estaban</h3>
+                                    <ul><li t-foreach="historyItems(review.missing_summary)" t-as="item" t-key="item" t-esc="item"/></ul>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </t>
+</templates>

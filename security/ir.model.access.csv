@@ -1,0 +1,11 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_sales_inventory_category,inventory.category,model_sales_inventory_category,base.group_user,1,1,1,1
+access_sales_inventory_product,inventory.product,model_sales_inventory_product,base.group_user,1,1,1,1
+access_sales_inventory_sale,inventory.sale,model_sales_inventory_sale,base.group_user,1,1,1,1
+access_sales_inventory_sale_line,inventory.sale.line,model_sales_inventory_sale_line,base.group_user,1,1,1,1
+access_sales_inventory_expense,inventory.expense,model_sales_inventory_expense,base.group_user,1,1,1,1
+access_sales_inventory_expense_line,inventory.expense.line,model_sales_inventory_expense_line,base.group_user,1,1,1,1
+access_sales_inventory_recovery,inventory.recovery,model_sales_inventory_recovery,base.group_user,1,1,1,1
+access_sales_inventory_dashboard,inventory.dashboard,model_sales_inventory_dashboard,base.group_user,1,0,0,0
+access_sales_inventory_review,inventory.review,model_sales_inventory_review,base.group_user,1,0,1,0
+access_sales_inventory_review_line,inventory.review.line,model_sales_inventory_review_line,base.group_user,1,0,1,0

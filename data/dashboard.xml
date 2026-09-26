@@ -1,0 +1,4 @@
+<odoo noupdate="1">
+    <record id="dashboard_main" model="sales.inventory.dashboard"><field name="name">Resumen general</field></record>
+</odoo>
+

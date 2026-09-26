@@ -1,0 +1,11 @@
+<odoo>
+    <menuitem id="menu_root" name="Ventas e Inventario" sequence="10"/>
+    <menuitem id="menu_dashboard" name="Dashboard" parent="menu_root" action="action_dashboard_client" sequence="10"/>
+    <menuitem id="menu_sales" name="Ventas" parent="menu_root" action="action_sales" sequence="20"/>
+    <menuitem id="menu_expenses" name="Solicitudes de gasto" parent="menu_root" action="action_expenses" sequence="30"/>
+    <menuitem id="menu_recoveries" name="Liberaciones de capital" parent="menu_root" action="action_recoveries" sequence="40" active="False"/>
+    <menuitem id="menu_products" name="Productos" parent="menu_root" action="action_products" sequence="50"/>
+    <menuitem id="menu_inventory_review" name="Revisión de inventario" parent="menu_root" action="action_inventory_review" sequence="55"/>
+    <menuitem id="menu_config" name="Configuración" parent="menu_root" sequence="90"/>
+    <menuitem id="menu_categories" name="Categorías" parent="menu_config" action="action_categories" sequence="10"/>
+</odoo>

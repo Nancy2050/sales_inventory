@@ -1,0 +1,28 @@
+<odoo>
+    <record id="view_expense_list" model="ir.ui.view"><field name="name">sales.inventory.expense.list</field><field name="model">sales.inventory.expense</field><field name="arch" type="xml">
+    <list decoration-success="state == 'confirmed'" decoration-muted="state == 'cancel'"><field name="name"/><field name="date"/><field name="expense_type"/><field name="concept"/><field name="fund_source"/><field name="amount" sum="Total"/><field name="state" widget="badge"/></list></field></record>
+    <record id="view_expense_form" model="ir.ui.view"><field name="name">sales.inventory.expense.form</field><field name="model">sales.inventory.expense</field><field name="arch" type="xml">
+    <form string="Solicitud de gasto">
+        <header><button name="action_confirm" string="Aprobar" type="object" class="btn-primary" invisible="state != 'draft'"/><button name="action_cancel" string="Cancelar" type="object" invisible="state != 'confirmed'"/><button name="action_draft" string="Volver a borrador" type="object" invisible="state != 'cancel'"/><field name="state" widget="statusbar" statusbar_visible="draft,confirmed,cancel"/></header>
+        <sheet><div class="oe_title"><label for="name"/><h1><field name="name"/></h1></div><group><group><field name="date"/><field name="expense_type" readonly="state != 'draft'"/><field name="concept"/></group><group><field name="fund_source" readonly="state != 'draft'"/><field name="fixed_amount" invisible="expense_type == 'reinvestment'" readonly="state != 'draft'"/><field name="amount" readonly="1"/><field name="recovered_used" invisible="state == 'draft'"/><field name="profit_used" invisible="state == 'draft'"/><field name="currency_id" invisible="1"/></group></group>
+        <div class="alert alert-info" role="alert" invisible="state != 'draft'">
+            El gasto se descontará primero del fondo elegido. Si no alcanza, la diferencia se tomará del otro fondo y se registrará en el historial.
+        </div>
+        <div class="alert alert-warning" role="alert" invisible="expense_type != 'capital_adjustment'">
+            Este tipo registra una compra ya reflejada en existencias: descuenta el dinero, pero no modifica el inventario.
+        </div>
+        <group string="Productos a comprar" invisible="expense_type != 'reinvestment'">
+            <div class="alert alert-info" role="alert">
+                <strong>Producto existente:</strong> captura la cantidad a agregar.
+                <br/><strong>Producto creado desde esta solicitud:</strong> marca “Usar existencia inicial” para evitar duplicarla.
+            </div>
+            <field name="line_ids" readonly="state != 'draft'"><list editable="bottom">
+                <field name="product_id"/><field name="use_initial_stock"/><field name="initial_qty" optional="show"/>
+                <field name="quantity" invisible="use_initial_stock"/><field name="effective_quantity" readonly="1"/>
+                <field name="unit_cost"/><field name="subtotal" sum="Total"/>
+            </list></field>
+        </group><field name="notes"/></sheet>
+        <chatter/>
+    </form></field></record>
+    <record id="action_expenses" model="ir.actions.act_window"><field name="name">Solicitudes de gasto</field><field name="res_model">sales.inventory.expense</field><field name="view_mode">list,form</field></record>
+</odoo>
